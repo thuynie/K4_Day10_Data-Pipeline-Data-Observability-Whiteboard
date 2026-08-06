@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-08-06T14:00:48.120054+00:00",
+  "threshold_days": 180,
+  "total_rows": 23,
+  "latest_published": "2026-06-15",
+  "oldest_published": "2000-06-30",
+  "stale_rows": 4,
+  "stale_ratio": 0.1739,
+  "fresh_rows": 19,
+  "min_age_days": 52,
+  "max_age_days": 9533,
+  "median_age_days": 92.0,
+  "days_since_latest": 52,
+  "stale_examples": [
+    "10.3390/buildings16132637",
+    "10.21079/11681/50309",
+    "10.1111/exsy.70341",
+    "10.63646/kpqm1958"
+  ],
+  "is_fresh": false,
+  "status": "stale"
+}

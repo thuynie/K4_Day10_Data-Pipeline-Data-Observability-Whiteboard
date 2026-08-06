@@ -1,22 +1,28 @@
 {
-  "report_name": "baseline",
-  "generated_at": "2026-08-06T14:07:14.886885+00:00",
+  "report_name": "corrupted",
+  "generated_at": "2026-08-06T14:00:45.004562+00:00",
   "engine": "pandas",
-  "total_rows": 24,
+  "total_rows": 23,
   "checks_total": 12,
-  "checks_passed": 12,
-  "checks_failed": 0,
-  "critical_failed": 0,
-  "warning_failed": 0,
-  "success_rate": 1.0,
-  "success": true,
+  "checks_passed": 7,
+  "checks_failed": 5,
+  "critical_failed": 3,
+  "warning_failed": 2,
+  "success_rate": 0.5833,
+  "success": false,
   "thresholds": {
     "min_rows": 5,
     "min_title_chars": 10,
     "min_summary_chars": 100,
     "freshness_threshold_days": 180
   },
-  "failed_check_names": [],
+  "failed_check_names": [
+    "paper_id_unique",
+    "summary_not_null",
+    "summary_min_length",
+    "freshness_within_threshold",
+    "title_no_duplicates"
+  ],
   "checks": [
     {
       "name": "row_count_min",
@@ -24,7 +30,7 @@
       "severity": "critical",
       "success": true,
       "expected": ">= 5 rows",
-      "observed": 24,
+      "observed": 23,
       "detail": "",
       "failed_examples": []
     },
@@ -42,11 +48,15 @@
       "name": "paper_id_unique",
       "column": "paper_id",
       "severity": "critical",
-      "success": true,
+      "success": false,
       "expected": "`paper_id` unique",
-      "observed": 0,
-      "detail": "",
-      "failed_examples": []
+      "observed": 3,
+      "detail": "3 gia tri `paper_id` bi lap.",
+      "failed_examples": [
+        "10.20944/preprints202602.0996.v1",
+        "10.22214/ijraset.2026.82233",
+        "10.55041/isjem07213"
+      ]
     },
     {
       "name": "title_not_null",
@@ -72,21 +82,31 @@
       "name": "summary_not_null",
       "column": "summary",
       "severity": "critical",
-      "success": true,
+      "success": false,
       "expected": "`summary` khong rong o moi dong",
-      "observed": 0,
-      "detail": "",
-      "failed_examples": []
+      "observed": 4,
+      "detail": "4 dong co `summary` rong.",
+      "failed_examples": [
+        "10.21203/rs.3.rs-9882260/v1",
+        "10.1093/sleep/zsag091.0346",
+        "10.20944/preprints202604.0339.v1",
+        "10.70121/001c.158711"
+      ]
     },
     {
       "name": "summary_min_length",
       "column": "summary",
       "severity": "critical",
-      "success": true,
+      "success": false,
       "expected": "len(`summary`) >= 100",
-      "observed": 0,
-      "detail": "",
-      "failed_examples": []
+      "observed": 4,
+      "detail": "4 dong co `summary` ngan hon 100 ky tu.",
+      "failed_examples": [
+        "10.21203/rs.3.rs-9882260/v1",
+        "10.1093/sleep/zsag091.0346",
+        "10.20944/preprints202604.0339.v1",
+        "10.70121/001c.158711"
+      ]
     },
     {
       "name": "text_for_embedding_not_null",
@@ -122,26 +142,35 @@
       "name": "freshness_within_threshold",
       "column": "age_days",
       "severity": "warning",
-      "success": true,
+      "success": false,
       "expected": "age_days <= 180",
-      "observed": 0,
-      "detail": "",
-      "failed_examples": []
+      "observed": 4,
+      "detail": "4 dong cu hon 180 ngay.",
+      "failed_examples": [
+        "10.3390/buildings16132637",
+        "10.21079/11681/50309",
+        "10.1111/exsy.70341",
+        "10.63646/kpqm1958"
+      ]
     },
     {
       "name": "title_no_duplicates",
       "column": "title",
       "severity": "warning",
-      "success": true,
+      "success": false,
       "expected": "khong co title trung lap (case-insensitive)",
-      "observed": 0,
-      "detail": "",
-      "failed_examples": []
+      "observed": 3,
+      "detail": "3 title xuat hien nhieu lan.",
+      "failed_examples": [
+        "clinical large language models with multi-stage instruction tuning and advanced ",
+        "hybrid graph neural network and large language model framework for robust knowle",
+        "speculative retrieval-augmented generation for cost-efficient large language mod"
+      ]
     }
   ],
   "great_expectations": {
     "status": "ok",
-    "success": true,
-    "result_path": "/home/trungdq/AITHUCCHIEN/Labs_\u0111ang_l\u00e0m/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/quality/gx/baseline_gx_result.json"
+    "success": false,
+    "result_path": "/home/trungdq/AITHUCCHIEN/Labs_\u0111ang_l\u00e0m/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/quality/gx/corrupted_gx_result.json"
   }
 }

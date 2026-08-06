@@ -1,6 +1,6 @@
 {
-  "report_name": "baseline",
-  "generated_at": "2026-08-06T14:07:14.886885+00:00",
+  "report_name": "repaired",
+  "generated_at": "2026-08-06T14:19:48.712004+00:00",
   "engine": "pandas",
   "total_rows": 24,
   "checks_total": 12,
@@ -142,6 +142,6 @@
   "great_expectations": {
     "status": "ok",
     "success": true,
-    "result_path": "/home/trungdq/AITHUCCHIEN/Labs_\u0111ang_l\u00e0m/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/quality/gx/baseline_gx_result.json"
+    "result_path": "/home/trungdq/AITHUCCHIEN/Labs_\u0111ang_l\u00e0m/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/quality/gx/repaired_gx_result.json"
   }
 }

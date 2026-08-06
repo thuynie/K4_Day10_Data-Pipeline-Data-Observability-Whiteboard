@@ -1,0 +1,169 @@
+{
+  "generated_at": "2026-08-06T13:41:46.991302+00:00",
+  "config": {
+    "seed": 42,
+    "drop_latest_n": 4,
+    "blank_summary_frac": 0.2,
+    "noise_frac": 0.2,
+    "truncate_title_frac": 0.15,
+    "stale_frac": 0.2,
+    "stale_year": 2000,
+    "truncate_title_chars": 18,
+    "duplicate_n": 3,
+    "min_testset_hits": 1
+  },
+  "rows_before": 24,
+  "rows_after": 23,
+  "row_delta": -1,
+  "summary": {
+    "drop_latest_records": 4,
+    "stale_published_date": 4,
+    "blank_summary": 4,
+    "inject_noise": 4,
+    "truncate_title": 3,
+    "duplicate_rows": 3
+  },
+  "testset_overlap": {
+    "testset_doc_ids": [
+      "10.20944/preprints202602.0996.v1",
+      "10.2118/234689-pa",
+      "10.21203/rs.3.rs-9882260/v1",
+      "10.2196/preprints.106157",
+      "10.22214/ijraset.2026.82233",
+      "10.32473/flairs.39.1.141782",
+      "10.36227/techrxiv.177272838.89432844/v1",
+      "10.63646/kpqm1958"
+    ],
+    "testset_doc_count": 8,
+    "corrupted_testset_doc_ids": [
+      "10.20944/preprints202602.0996.v1",
+      "10.2118/234689-pa",
+      "10.21203/rs.3.rs-9882260/v1",
+      "10.2196/preprints.106157",
+      "10.22214/ijraset.2026.82233",
+      "10.32473/flairs.39.1.141782",
+      "10.63646/kpqm1958"
+    ],
+    "corrupted_testset_doc_count": 7,
+    "scenarios_without_testset_hit": [],
+    "ok": true
+  },
+  "events": [
+    {
+      "type": "drop_latest_records",
+      "count": 4,
+      "paper_ids": [
+        "10.2118/234689-pa",
+        "10.1007/s10278-026-02086-9",
+        "10.21203/rs.3.rs-10178277/v1",
+        "10.2196/preprints.106157"
+      ],
+      "testset_hits": [
+        "10.2118/234689-pa",
+        "10.2196/preprints.106157"
+      ],
+      "testset_hit_count": 2,
+      "detail": "Xoa 4 ban ghi co published moi nhat.",
+      "dropped_published": [
+        "2026-08-05",
+        "2026-07-13",
+        "2026-07-10",
+        "2026-07-03"
+      ]
+    },
+    {
+      "type": "stale_published_date",
+      "count": 4,
+      "paper_ids": [
+        "10.63646/kpqm1958",
+        "10.3390/buildings16132637",
+        "10.21079/11681/50309",
+        "10.1111/exsy.70341"
+      ],
+      "testset_hits": [
+        "10.63646/kpqm1958"
+      ],
+      "testset_hit_count": 1,
+      "detail": "Doi published/updated cua cac ban ghi moi nhat ve nam 2000.",
+      "published_before": [
+        "2026-06-30",
+        "2026-07-02",
+        "2026-07-01",
+        "2026-06-30"
+      ],
+      "published_after": [
+        "2000-06-30",
+        "2000-07-02",
+        "2000-07-01",
+        "2000-06-30"
+      ]
+    },
+    {
+      "type": "blank_summary",
+      "count": 4,
+      "paper_ids": [
+        "10.21203/rs.3.rs-9882260/v1",
+        "10.70121/001c.158711",
+        "10.1093/sleep/zsag091.0346",
+        "10.20944/preprints202604.0339.v1"
+      ],
+      "testset_hits": [
+        "10.21203/rs.3.rs-9882260/v1"
+      ],
+      "testset_hit_count": 1,
+      "detail": "Xoa trang cot summary (abstract mat khi parse)."
+    },
+    {
+      "type": "inject_noise",
+      "count": 4,
+      "paper_ids": [
+        "10.22214/ijraset.2026.82233",
+        "10.55041/isjem07213",
+        "10.47576/2949-1894.2026.7.7.023",
+        "10.52060/juptik.v4i1.4318"
+      ],
+      "testset_hits": [
+        "10.22214/ijraset.2026.82233"
+      ],
+      "testset_hit_count": 1,
+      "detail": "Chen HTML/boilerplate/ky tu ngau nhien vao summary -> text_for_embedding.",
+      "fragments_used": [
+        "<div class='ltx_para'>",
+        "&amp;#x2028;",
+        "\ufffd\ufffd\ufffd",
+        "COPYRIGHT (C) PUBLISHER. ALL RIGHTS RESERVED. DOWNLOADED FROM PROXY 10.0.0.1",
+        "|||| OCR_CONFIDENCE=0.12 ||||",
+        "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod."
+      ]
+    },
+    {
+      "type": "truncate_title",
+      "count": 3,
+      "paper_ids": [
+        "10.32473/flairs.39.1.141782",
+        "10.54254/2753-8818/2026.dl34055",
+        "10.21203/rs.3.rs-10012178/v1"
+      ],
+      "testset_hits": [
+        "10.32473/flairs.39.1.141782"
+      ],
+      "testset_hit_count": 1,
+      "detail": "Cat title con 18 ky tu."
+    },
+    {
+      "type": "duplicate_rows",
+      "count": 3,
+      "paper_ids": [
+        "10.22214/ijraset.2026.82233",
+        "10.20944/preprints202602.0996.v1",
+        "10.55041/isjem07213"
+      ],
+      "testset_hits": [
+        "10.20944/preprints202602.0996.v1",
+        "10.22214/ijraset.2026.82233"
+      ],
+      "testset_hit_count": 2,
+      "detail": "Nhan doi ban ghi, giu nguyen paper_id (vi pham unique key)."
+    }
+  ]
+}

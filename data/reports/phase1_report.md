@@ -1,6 +1,6 @@
 # Phase 1 - Baseline pipeline report
 
-_Generated at: 2026-08-06T10:31:06.725566+00:00_
+_Generated at: 2026-08-06T14:07:17.585073+00:00_
 
 ## Source
 
@@ -25,6 +25,7 @@ _Generated at: 2026-08-06T10:31:06.725566+00:00_
 | `embeddings_manifest` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/embeddings/papers_embeddings.json |
 | `eval_testset` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/eval/test_set.json |
 | `baseline_metrics` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/results/baseline_metrics.json |
+| `agent_metrics` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/results/agent_metrics.json |
 
 
 ## Evaluation metrics
@@ -42,6 +43,21 @@ _Generated at: 2026-08-06T10:31:06.725566+00:00_
 | Metric | Value |
 | --- | --- |
 | `skipped` | Set RUN_RAGAS=1 to enable the slower Ragas pass. |
+
+
+## Agent evaluation
+
+Cung test set, cung ground truth, khac cach sinh cau tra loi:
+`deterministic` di qua `qa.answer_question` (khong goi LLM, dung lam moc so sanh cho Pha 2), `agent` di qua `create_agent` voi hai tool.
+
+| Metric | Deterministic | Agent | Δ |
+| --- | --- | --- | --- |
+| Retrieval hit rate | 1.0000 | 0.0000 | -1.0000 |
+| Mean token F1 | 0.9314 | 0.0000 | -0.9314 |
+| Judge accuracy | 1.0000 | 0.0000 | -1.0000 |
+| Mean judge score | 4.5000 | 1 | -3.5000 |
+
+> 32/32 cau agent khong tra loi duoc. Phan hut nay den tu loi ha tang (rate limit, timeout), khong phai tu chat luong du lieu.
 
 
 ## Data quality

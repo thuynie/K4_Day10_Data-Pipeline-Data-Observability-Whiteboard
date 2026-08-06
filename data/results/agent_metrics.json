@@ -1,0 +1,9 @@
+{
+  "mode": "agent",
+  "samples": 32,
+  "agent_errors": 32,
+  "retrieval_hit_rate": 0.0,
+  "mean_token_f1": 0.0,
+  "judge_accuracy": 0.0,
+  "mean_judge_score": 1
+}
