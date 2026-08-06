@@ -9,7 +9,7 @@ import pandas as pd
 
 from core.config import Settings
 from core.utils import read_json, safe_slug, write_json
-from retrieval.embeddings import MiniLMEmbeddings
+from retrieval.embeddings import describe_backend, get_embeddings
 
 
 @dataclass(frozen=True)
@@ -34,7 +34,7 @@ class LocalEmbeddingIndex:
         self.documents = documents
         self.persist_path = persist_path
         self.embedding_backend = "chroma"
-        self.embedding_model = MiniLMEmbeddings(settings.embedding_model)
+        self.embedding_model = get_embeddings(settings)
         self.client = chromadb.PersistentClient(path=str(persist_path))
         self.collection = self.client.get_collection(name=collection_name)
         self.documents_by_paper_id = {document["paper_id"].lower(): document for document in documents}
@@ -92,7 +92,7 @@ class LocalEmbeddingIndex:
         persist_path = settings.paths.chroma_dir
         persist_path.mkdir(parents=True, exist_ok=True)
 
-        embedding_model = MiniLMEmbeddings(settings.embedding_model)
+        embedding_model = get_embeddings(settings)
         client = chromadb.PersistentClient(path=str(persist_path))
         try:
             client.delete_collection(name=collection_name)
@@ -115,7 +115,12 @@ class LocalEmbeddingIndex:
             manifest_path,
             {
                 "backend": "chroma",
-                "embedding_model": settings.embedding_model,
+                # Ghi day du model/so chieu/task type: ba trang thai baseline,
+                # corrupted va repaired BAT BUOC phai trung nhau o cac truong
+                # nay, neu khong thi so sanh metric la vo nghia.
+                **describe_backend(embedding_model),
+                "vector_dimensions": len(embeddings[0]) if embeddings else 0,
+                "document_count": len(documents),
                 "persist_path": str(persist_path),
                 "collection_name": collection_name,
                 "documents": documents,

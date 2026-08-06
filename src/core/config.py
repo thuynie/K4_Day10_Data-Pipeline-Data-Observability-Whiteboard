@@ -53,6 +53,7 @@ class Settings:
     custom_llm_api_key: str | None
     custom_llm_base_url: str | None
     embedding_model: str
+    embedding_dimensions: int
     baseline_collection_name: str
     corrupted_collection_name: str
     repaired_collection_name: str
@@ -119,7 +120,13 @@ def load_settings(project_dir: Path | None = None) -> Settings:
         ollama_base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         custom_llm_api_key=os.getenv("CUSTOM_LLM_API_KEY"),
         custom_llm_base_url=os.getenv("CUSTOM_LLM_BASE_URL"),
-        embedding_model="sentence-transformers/all-MiniLM-L6-v2",
+        # Ten bat dau bang "gemini-" -> goi Gemini Embedding API.
+        # Bat ky ten nao khac -> chay SentenceTransformer local (offline fallback),
+        # vi du "sentence-transformers/all-MiniLM-L6-v2".
+        embedding_model=os.getenv("EMBEDDING_MODEL", "gemini-embedding-001"),
+        # Chi co tac dung voi model Gemini (Matryoshka). Google khuyen dung
+        # 768 / 1536 / 3072.
+        embedding_dimensions=int(os.getenv("EMBEDDING_DIMENSIONS", "1536")),
         baseline_collection_name="papers-baseline",
         corrupted_collection_name="papers-corrupted",
         repaired_collection_name="papers-repaired",
