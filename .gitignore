@@ -5,3 +5,4 @@ lab.txt
 src/*.egg-info/
 lab/
 **/__pycache__/
+.idea/

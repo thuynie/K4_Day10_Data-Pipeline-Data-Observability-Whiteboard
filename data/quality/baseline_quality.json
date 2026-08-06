@@ -1,0 +1,74 @@
+{
+  "report_name": "baseline_quality",
+  "generated_at": "2026-08-06T10:04:31.654236+00:00",
+  "success": true,
+  "row_count": 24,
+  "checks_passed": 9,
+  "checks_failed": 0,
+  "failed_checks": [],
+  "checks": [
+    {
+      "name": "row_count_positive",
+      "dimension": "volume",
+      "success": true,
+      "observed": 24,
+      "expectation": "> 0 rows"
+    },
+    {
+      "name": "required_columns_present",
+      "dimension": "schema",
+      "success": true,
+      "observed": [],
+      "expectation": "columns present: paper_id, title, summary, published, age_days"
+    },
+    {
+      "name": "paper_id_not_null",
+      "dimension": "completeness",
+      "success": true,
+      "observed": 0,
+      "expectation": "0 missing/blank"
+    },
+    {
+      "name": "paper_id_unique",
+      "dimension": "uniqueness",
+      "success": true,
+      "observed": 0,
+      "expectation": "0 duplicates"
+    },
+    {
+      "name": "title_not_null",
+      "dimension": "completeness",
+      "success": true,
+      "observed": 0,
+      "expectation": "0 missing/blank"
+    },
+    {
+      "name": "summary_not_null",
+      "dimension": "completeness",
+      "success": true,
+      "observed": 0,
+      "expectation": "0 missing/blank"
+    },
+    {
+      "name": "summary_min_length",
+      "dimension": "validity",
+      "success": true,
+      "observed": 0,
+      "expectation": "0 summaries shorter than 100 characters"
+    },
+    {
+      "name": "age_days_valid",
+      "dimension": "validity",
+      "success": true,
+      "observed": 0,
+      "expectation": "0 null, non-numeric or negative values"
+    },
+    {
+      "name": "rows_within_freshness_threshold",
+      "dimension": "freshness",
+      "success": true,
+      "observed": 0,
+      "expectation": "0 rows older than 180 days"
+    }
+  ]
+}
