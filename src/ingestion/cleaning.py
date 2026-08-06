@@ -8,6 +8,7 @@ import re
 
 import pandas as pd
 
+from core.utils import build_embedding_text
 from ingestion.crossref import PaperRecord
 
 
@@ -46,7 +47,8 @@ def build_clean_dataframe(
     2. Strip XML/HTML tags from title and summary.
     3. Join authors into authors_joined and categories into categories_joined with commas.
     4. Format published date to YYYY-MM-DD and compute age_days.
-    5. Build text_for_embedding as: Title: [title] | Authors: [authors] | Summary: [summary].
+    5. Build text_for_embedding via core.utils.build_embedding_text (shared with
+       corruption.py's rebuild step so baseline/corrupted embeddings stay comparable).
     6. Deduplicate by paper_id, sort by published date descending.
     7. Optionally save to clean_csv_path and clean_json_path if provided.
     """
@@ -99,14 +101,21 @@ def build_clean_dataframe(
 
         primary_category = _clean_str(r.primary_category) or categories[0]
 
-        published_str = r.published.strip() if r.published else "1970-01-01"
-        updated_str = r.updated.strip() if r.updated else published_str
+        published_raw = r.published.strip() if r.published else "1970-01-01"
+        updated_raw = r.updated.strip() if r.updated else published_raw
 
-        # Parse date and calculate age_days
+        # Parse and normalize dates to YYYY-MM-DD; compute age_days from run_date
         try:
-            pub_dt = datetime.strptime(published_str[:10], "%Y-%m-%d")
+            pub_dt = datetime.strptime(published_raw[:10], "%Y-%m-%d")
         except ValueError:
             pub_dt = datetime(1970, 1, 1)
+        try:
+            upd_dt = datetime.strptime(updated_raw[:10], "%Y-%m-%d")
+        except ValueError:
+            upd_dt = pub_dt
+
+        published_str = pub_dt.strftime("%Y-%m-%d")
+        updated_str = upd_dt.strftime("%Y-%m-%d")
 
         age_days = (run_dt_naive - pub_dt).days
         if age_days < 0:
@@ -114,8 +123,7 @@ def build_clean_dataframe(
 
         summary_chars = len(summary)
 
-        # Format: Title: [title] | Authors: [authors] | Summary: [summary]
-        text_for_embedding = f"Title: {title} | Authors: {authors_joined} | Summary: {summary}"
+        text_for_embedding = build_embedding_text(title, authors_joined, categories_joined, summary)
 
         row = {
             "paper_id": paper_id,

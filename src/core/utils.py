@@ -50,3 +50,24 @@ def compact_join(items: Iterable[str], sep: str = ", ") -> str:
 def first_sentence(text: str) -> str:
     chunks = re.split(r"(?<=[.!?])\s+", normalize_whitespace(text))
     return chunks[0] if chunks else normalize_whitespace(text)
+
+
+def build_embedding_text(
+    title: str,
+    authors_joined: str,
+    categories_joined: str,
+    summary: str,
+) -> str:
+    """Dung chuoi `text_for_embedding` tu cac field da clean.
+
+    QUAN TRONG: ca `cleaning.py` (baseline) va `corruption.py` (buoc 7 rebuild)
+    deu phai goi ham NAY. Neu hai noi tu build chuoi theo format khac nhau thi
+    khi so sanh baseline vs corrupted, mot phan chenh lech metric se den tu
+    khac format chu khong phai tu du lieu hong -> ket luan cua bai lab sai.
+    """
+    return (
+        f"Title: {title or ''}\n"
+        f"Authors: {authors_joined or ''}\n"
+        f"Categories: {categories_joined or ''}\n"
+        f"Summary: {summary or ''}"
+    )

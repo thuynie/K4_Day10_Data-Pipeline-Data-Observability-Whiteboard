@@ -28,6 +28,8 @@ class LocalEmbeddingIndex:
         collection_name: str,
         documents: list[dict[str, Any]],
         persist_path: Path,
+        client: "chromadb.ClientAPI | None" = None,
+        collection: Any = None,
     ):
         self.settings = settings
         self.collection_name = collection_name
@@ -35,8 +37,25 @@ class LocalEmbeddingIndex:
         self.persist_path = persist_path
         self.embedding_backend = "chroma"
         self.embedding_model = get_embeddings(settings)
-        self.client = chromadb.PersistentClient(path=str(persist_path))
-        self.collection = self.client.get_collection(name=collection_name)
+
+        # `chromadb.PersistentClient` chia se System theo path trong cung mot
+        # process. Neu `build()` vua delete + create lai collection roi o day ta
+        # goi `get_collection()` mot lan nua, client co the tra ve entry cu trong
+        # cache -> Collection tro toi UUID da bi xoa -> `query()` nem
+        # NotFoundError. Vi vay khi `build()` da co san client/collection thi
+        # dung lai luon, khong fetch lai.
+        self.client = client or chromadb.PersistentClient(path=str(persist_path))
+        if collection is not None:
+            self.collection = collection
+        else:
+            try:
+                self.collection = self.client.get_collection(name=collection_name)
+            except Exception as exc:
+                raise RuntimeError(
+                    f"Khong tim thay collection '{collection_name}' trong {persist_path}. "
+                    "Chay lai script/run_phase1.py de build index truoc."
+                ) from exc
+
         self.documents_by_paper_id = {document["paper_id"].lower(): document for document in documents}
         self.documents_by_title = {document["title"].lower(): document for document in documents}
 
@@ -126,11 +145,14 @@ class LocalEmbeddingIndex:
                 "documents": documents,
             },
         )
+        # Truyen thang client + collection vua tao xuong constructor.
         return cls(
             settings=settings,
             collection_name=collection_name,
             documents=documents,
             persist_path=persist_path,
+            client=client,
+            collection=collection,
         )
 
     @classmethod

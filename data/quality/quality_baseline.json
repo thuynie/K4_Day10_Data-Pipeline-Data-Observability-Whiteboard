@@ -1,0 +1,147 @@
+{
+  "report_name": "baseline",
+  "generated_at": "2026-08-06T10:31:04.240569+00:00",
+  "engine": "pandas",
+  "total_rows": 24,
+  "checks_total": 12,
+  "checks_passed": 12,
+  "checks_failed": 0,
+  "critical_failed": 0,
+  "warning_failed": 0,
+  "success_rate": 1.0,
+  "success": true,
+  "thresholds": {
+    "min_rows": 5,
+    "min_title_chars": 10,
+    "min_summary_chars": 100,
+    "freshness_threshold_days": 180
+  },
+  "failed_check_names": [],
+  "checks": [
+    {
+      "name": "row_count_min",
+      "column": null,
+      "severity": "critical",
+      "success": true,
+      "expected": ">= 5 rows",
+      "observed": 24,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "paper_id_not_null",
+      "column": "paper_id",
+      "severity": "critical",
+      "success": true,
+      "expected": "`paper_id` khong rong o moi dong",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "paper_id_unique",
+      "column": "paper_id",
+      "severity": "critical",
+      "success": true,
+      "expected": "`paper_id` unique",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "title_not_null",
+      "column": "title",
+      "severity": "critical",
+      "success": true,
+      "expected": "`title` khong rong o moi dong",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "title_min_length",
+      "column": "title",
+      "severity": "critical",
+      "success": true,
+      "expected": "len(`title`) >= 10",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "summary_not_null",
+      "column": "summary",
+      "severity": "critical",
+      "success": true,
+      "expected": "`summary` khong rong o moi dong",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "summary_min_length",
+      "column": "summary",
+      "severity": "critical",
+      "success": true,
+      "expected": "len(`summary`) >= 100",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "text_for_embedding_not_null",
+      "column": "text_for_embedding",
+      "severity": "critical",
+      "success": true,
+      "expected": "`text_for_embedding` khong rong o moi dong",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "published_format",
+      "column": "published",
+      "severity": "critical",
+      "success": true,
+      "expected": "`published` theo dinh dang YYYY-MM-DD",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "age_days_non_negative",
+      "column": "age_days",
+      "severity": "critical",
+      "success": true,
+      "expected": "`age_days` la so >= 0",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "freshness_within_threshold",
+      "column": "age_days",
+      "severity": "warning",
+      "success": true,
+      "expected": "age_days <= 180",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    },
+    {
+      "name": "title_no_duplicates",
+      "column": "title",
+      "severity": "warning",
+      "success": true,
+      "expected": "khong co title trung lap (case-insensitive)",
+      "observed": 0,
+      "detail": "",
+      "failed_examples": []
+    }
+  ],
+  "great_expectations": {
+    "status": "ok",
+    "success": true,
+    "result_path": "/home/trungdq/AITHUCCHIEN/Labs_\u0111ang_l\u00e0m/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/quality/gx/baseline_gx_result.json"
+  }
+}
