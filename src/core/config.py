@@ -28,6 +28,8 @@ class Paths:
     baseline_metrics: Path
     baseline_answers: Path
     demo_answers: Path
+    agent_metrics: Path
+    agent_answers: Path
     quality_dir: Path
     gx_dir: Path
     freshness_report: Path
@@ -65,6 +67,7 @@ class Settings:
     freshness_threshold_days: int
     refresh_source: bool
     refresh_test_set: bool
+    run_agent_eval: bool
     paths: Paths
 
 
@@ -87,8 +90,8 @@ def load_settings(project_dir: Path | None = None) -> Settings:
         clean_json=data_dir / "clean" / "papers_clean.json",
         chroma_dir=data_dir / "chroma",
         embeddings_json=data_dir / "embeddings" / "papers_embeddings.json",
-        corrupted_clean_csv=data_dir / "clean" / "papers_clean_corrupted.csv",
-        corrupted_clean_json=data_dir / "clean" / "papers_clean_corrupted.json",
+        corrupted_clean_csv=data_dir / "clean" / "papers_corrupted.csv",
+        corrupted_clean_json=data_dir / "clean" / "papers_corrupted.json",
         corrupted_embeddings_json=data_dir / "embeddings" / "papers_embeddings_corrupted.json",
         repaired_clean_csv=data_dir / "clean" / "papers_clean_repaired.csv",
         repaired_clean_json=data_dir / "clean" / "papers_clean_repaired.json",
@@ -97,6 +100,8 @@ def load_settings(project_dir: Path | None = None) -> Settings:
         baseline_metrics=data_dir / "results" / "baseline_metrics.json",
         baseline_answers=data_dir / "results" / "baseline_answers.json",
         demo_answers=data_dir / "results" / "agent_demo_answers.json",
+        agent_metrics=data_dir / "results" / "agent_metrics.json",
+        agent_answers=data_dir / "results" / "agent_answers.json",
         quality_dir=data_dir / "quality",
         gx_dir=data_dir / "quality" / "gx",
         freshness_report=data_dir / "quality" / "freshness_report.json",
@@ -138,6 +143,9 @@ def load_settings(project_dir: Path | None = None) -> Settings:
         freshness_threshold_days=freshness_threshold_days,
         refresh_source=os.getenv("REFRESH_SOURCE", "").lower() in {"1", "true", "yes"},
         refresh_test_set=os.getenv("REFRESH_TEST_SET", "").lower() in {"1", "true", "yes"},
+        # Agent eval goi LLM nhieu vong tren tung cau hoi -> tot quota va cham.
+        # Bat mac dinh, dat RUN_AGENT_EVAL=0 de tat khi chi muon chay nhanh.
+        run_agent_eval=os.getenv("RUN_AGENT_EVAL", "1").lower() in {"1", "true", "yes"},
         paths=paths,
     )
 

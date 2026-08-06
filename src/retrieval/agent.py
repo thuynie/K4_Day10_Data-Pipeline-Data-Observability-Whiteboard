@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Callable
 
 from langchain.agents import create_agent
 from langchain.tools import tool
@@ -10,11 +10,28 @@ from retrieval.index import LocalEmbeddingIndex
 from retrieval.llm import build_llm
 
 
-def build_agent(settings: Settings, index: LocalEmbeddingIndex):
+def build_agent(
+    settings: Settings,
+    index: LocalEmbeddingIndex,
+    on_retrieve: Callable[[list[str]], None] | None = None,
+) -> Any:
+    """Tao RAG agent co hai tool tren local corpus.
+
+    Args:
+        on_retrieve: callback nhan danh sach `paper_id` moi khi agent goi tool.
+            Dung de do `retrieval_hit_rate` - neu khong instrument thi ta chi
+            biet cau tra loi cuoi cung, khong biet agent da nhin thay doc nao.
+    """
+
+    def _record(paper_ids: list[str]) -> None:
+        if on_retrieve and paper_ids:
+            on_retrieve(paper_ids)
+
     @tool
     def semantic_search_papers(query: str, top_k: int = 4) -> str:
         """Search the local paper corpus with embeddings and return the most relevant papers."""
         results = index.search(query, top_k=top_k)
+        _record([result.paper_id for result in results])
         lines = []
         for result in results:
             lines.append(
@@ -31,6 +48,7 @@ def build_agent(settings: Settings, index: LocalEmbeddingIndex):
         record = index.lookup(paper_id_or_title)
         if not record:
             return "No exact paper match found."
+        _record([record["paper_id"]])
         return (
             f"paper_id: {record['paper_id']}\n"
             f"title: {record['title']}\n"

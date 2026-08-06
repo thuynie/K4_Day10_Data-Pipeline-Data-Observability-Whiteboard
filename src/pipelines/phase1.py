@@ -4,21 +4,15 @@ import logging
 
 from core.config import load_settings, require_llm_credentials
 from core.utils import now_utc, write_json
-from evaluation.metrics import evaluate_pipeline
+from evaluation.metrics import evaluate_agent_pipeline, evaluate_pipeline
 from evaluation.testset import build_test_set
 from ingestion.cleaning import build_clean_dataframe
 from ingestion.crossref import fetch_source_records
 from observability.quality import build_freshness_report, run_data_quality_checks
 from observability.reporting import generate_phase1_report
-from retrieval.agent import build_agent, run_agent_question
 from retrieval.index import LocalEmbeddingIndex
 
 logger = logging.getLogger(__name__)
-
-# So cau hoi lay tu test set de demo agent o buoc cuoi. Demo chi de nhin bang
-# mat "agent tra loi the nao tren du lieu sach", khong tinh vao metric, nen giu
-# nho de khong dot them quota LLM.
-DEMO_QUESTION_COUNT = 3
 
 
 def main() -> None:
@@ -132,6 +126,12 @@ def main() -> None:
             len(bundle.answers),
         )
 
+    # --- 7b. Evaluate bang LLM agent -------------------------------------
+    # Duong do thu hai tren CUNG test set. `evaluate_pipeline` o tren la
+    # deterministic (khong goi LLM khi sinh cau tra loi) nen dung lam moc so
+    # sanh cho Pha 2; con day moi tra loi duoc "agent that co lam duoc khong".
+    agent_metrics = _run_agent_eval(settings, index, paths)
+
     # --- 8. Data quality checks va freshness report ---------------------
     quality = run_data_quality_checks(clean_df, settings, report_name="baseline")
     logger.info(
@@ -172,6 +172,7 @@ def main() -> None:
         "embeddings_manifest": str(paths.embeddings_json),
         "eval_testset": str(paths.eval_testset),
         "baseline_metrics": str(paths.baseline_metrics),
+        "agent_metrics": str(paths.agent_metrics) if agent_metrics else "khong chay",
     }
     generate_phase1_report(
         paths.baseline_report,
@@ -179,41 +180,51 @@ def main() -> None:
         metrics=metrics,
         quality=quality,
         freshness=freshness,
+        agent_metrics=agent_metrics,
     )
     logger.info("Report: %s", paths.baseline_report)
-
-    # --- 10. Demo agent tren vai cau hoi --------------------------------
-    _demo_agent(settings, index, bundle.answers)
-
     logger.info("Phase 1 hoan tat.")
 
 
-def _demo_agent(settings, index, answers: list[dict]) -> None:
-    """Chay agent tren vai cau hoi de xem no dung tool the nao.
+def _run_agent_eval(settings, index, paths) -> dict | None:
+    """Chay agent tren toan bo test set. Khong duoc lam vo pipeline.
 
-    Buoc nay KHONG duoc lam vo pipeline: metric va report o tren da ghi ra file
-    roi, con day chi la phan minh hoa. Agent goi LLM nhieu vong nen de dinh rate
-    limit hon han cac buoc trc - bat exception va ghi lai loi thay vi crash.
+    Metric va report chinh da ghi ra file truoc buoc nay. Agent goi LLM nhieu
+    vong tren moi cau nen de dinh rate limit hon han cac buoc khac - bat
+    exception, ghi lai loi, roi di tiep.
     """
-    questions = [item["question"] for item in answers[:DEMO_QUESTION_COUNT]]
-    if not questions:
-        return
+    if not settings.run_agent_eval:
+        logger.info("Bo qua agent eval (RUN_AGENT_EVAL=0).")
+        return None
 
-    demo: list[dict] = []
     try:
-        agent = build_agent(settings, index)
+        bundle = evaluate_agent_pipeline(
+            settings,
+            index,
+            test_set_path=paths.eval_testset,
+            metrics_output_path=paths.agent_metrics,
+            answers_output_path=paths.agent_answers,
+        )
     except Exception as exc:
-        logger.warning("Bo qua demo agent (khong khoi tao duoc): %s", exc)
-        write_json(settings.paths.demo_answers, {"error": f"{type(exc).__name__}: {exc}"})
-        return
+        logger.warning("Agent eval that bai: %s: %s", type(exc).__name__, exc)
+        write_json(paths.agent_metrics, {"error": f"{type(exc).__name__}: {exc}"})
+        return None
 
-    for question in questions:
-        try:
-            answer = run_agent_question(agent, question)
-            demo.append({"question": question, "answer": answer})
-        except Exception as exc:
-            logger.warning("Demo agent loi o cau '%s': %s", question, exc)
-            demo.append({"question": question, "error": f"{type(exc).__name__}: {exc}"})
+    summary = bundle.summary
+    logger.info(
+        "Agent: hit_rate=%.4f token_f1=%.4f judge_acc=%.4f (%d cau loi)",
+        summary["retrieval_hit_rate"],
+        summary["mean_token_f1"],
+        summary["judge_accuracy"],
+        summary["agent_errors"],
+    )
+    if summary["agent_errors"]:
+        logger.warning(
+            "%d/%d cau agent khong tra loi duoc - metric agent lan nay bi keo xuong "
+            "boi loi ha tang, khong phai boi chat luong du lieu.",
+            summary["agent_errors"],
+            summary["samples"],
+        )
+    return summary
 
-    write_json(settings.paths.demo_answers, demo)
-    logger.info("Demo agent: %d cau -> %s", len(demo), settings.paths.demo_answers)
+

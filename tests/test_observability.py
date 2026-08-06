@@ -174,6 +174,34 @@ def test_phase1_report_is_written(clean_df, settings):
     assert "Freshness" in text
 
 
+def test_phase1_report_renders_agent_section(clean_df, settings):
+    quality = run_data_quality_checks(clean_df, settings, "baseline")
+    freshness = build_freshness_report(clean_df, settings, settings.paths.freshness_report)
+    deterministic = {"retrieval_hit_rate": 1.0, "mean_token_f1": 0.93, "judge_accuracy": 1.0, "mean_judge_score": 4.5}
+    agent = {"mode": "agent", "samples": 32, "agent_errors": 2,
+             "retrieval_hit_rate": 0.9, "mean_token_f1": 0.61, "judge_accuracy": 0.8, "mean_judge_score": 4.0}
+
+    generate_phase1_report(
+        settings.paths.baseline_report, {}, deterministic, quality, freshness, agent_metrics=agent
+    )
+
+    text = settings.paths.baseline_report.read_text(encoding="utf-8")
+    assert "Agent evaluation" in text
+    assert "-0.1000" in text  # retrieval hit rate: 0.9 - 1.0
+    assert "2/32" in text  # canh bao so cau agent loi
+
+
+def test_phase1_report_without_agent_metrics(clean_df, settings):
+    quality = run_data_quality_checks(clean_df, settings, "baseline")
+    freshness = build_freshness_report(clean_df, settings, settings.paths.freshness_report)
+
+    generate_phase1_report(settings.paths.baseline_report, {}, {}, quality, freshness)
+
+    text = settings.paths.baseline_report.read_text(encoding="utf-8")
+    assert "Agent evaluation" in text
+    assert "Khong chay" in text
+
+
 def test_corruption_report_shows_signed_deltas(clean_df, settings):
     quality = run_data_quality_checks(clean_df, settings, "baseline")
     freshness = build_freshness_report(clean_df, settings, settings.paths.freshness_report)

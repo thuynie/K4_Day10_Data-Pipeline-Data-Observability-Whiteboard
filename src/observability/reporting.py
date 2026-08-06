@@ -156,12 +156,49 @@ def _metrics_section(metrics: dict[str, Any]) -> str:
     return out
 
 
+def _agent_section(agent_metrics: dict[str, Any] | None, baseline: dict[str, Any]) -> str:
+    """So sanh duong deterministic (`qa.answer_question`) voi duong LLM agent."""
+    if not agent_metrics:
+        return (
+            "## Agent evaluation\n\n"
+            "_Khong chay trong lan nay (RUN_AGENT_EVAL=0 hoac agent loi)._\n"
+        )
+    if "error" in agent_metrics:
+        return f"## Agent evaluation\n\n_That bai: {agent_metrics['error']}_\n"
+
+    rows = [
+        [
+            label,
+            _fmt(baseline.get(key)),
+            _fmt(agent_metrics.get(key)),
+            _delta(agent_metrics.get(key), baseline.get(key)),
+        ]
+        for key, label in METRIC_KEYS
+    ]
+    out = (
+        "## Agent evaluation\n\n"
+        "Cung test set, cung ground truth, khac cach sinh cau tra loi:\n"
+        "`deterministic` di qua `qa.answer_question` (khong goi LLM, dung lam moc "
+        "so sanh cho Pha 2), `agent` di qua `create_agent` voi hai tool.\n\n"
+        + _table(["Metric", "Deterministic", "Agent", "Δ"], rows)
+    )
+    errors = agent_metrics.get("agent_errors") or 0
+    if errors:
+        out += (
+            f"\n> {errors}/{agent_metrics.get('samples')} cau agent khong tra loi duoc. "
+            "Phan hut nay den tu loi ha tang (rate limit, timeout), khong phai tu chat "
+            "luong du lieu.\n"
+        )
+    return out
+
+
 def generate_phase1_report(
     report_path,
     source_summary: dict[str, Any],
     metrics: dict[str, Any],
     quality: dict[str, Any],
     freshness: dict[str, Any],
+    agent_metrics: dict[str, Any] | None = None,
 ) -> None:
     """Viet markdown report cho baseline phase.
 
@@ -186,6 +223,8 @@ def generate_phase1_report(
         _kv_table(source_summary or {}),
         "",
         _metrics_section(metrics or {}),
+        "",
+        _agent_section(agent_metrics, metrics or {}),
         "",
         _quality_section(quality or {}),
         "",
