@@ -34,10 +34,7 @@
 
 | Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
 | --- | --- | --- |
-| Đọc và sửa code theo role của từng thành viên | [Điền tên thành viên + module] | [Điền: commit/PR nào, sửa gì] |
 | Debug lỗi ChromaDB `NotFoundError` | `src/retrieval/index.py` (module dùng chung) | Sửa root cause, pipeline chạy được end-to-end — chi tiết mục 6 |
-
-> Khi nộp: điền tên cụ thể của thành viên và số hiệu commit vào dòng đầu bảng trên, hoặc xóa dòng đó nếu không kiểm chứng được bằng lịch sử git.
 
 ## 3. Kết quả theo vai trò
 
