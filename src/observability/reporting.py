@@ -140,6 +140,34 @@ def _freshness_section(freshness: dict[str, Any], title: str = "Freshness") -> s
     return f"## {title}\n\n" + _table(["Field", "Value"], rows)
 
 
+def _judge_caveat(metrics: dict[str, Any]) -> str:
+    """Canh bao khi diem judge khong den tu LLM.
+
+    `judge_accuracy` va `mean_judge_score` chi co y nghia "LLM cham diem" khi
+    `judge_source == "llm"`. Neu roi sang heuristic thi chung chi la ham bac
+    thang cua token_f1, khong phai chi so doc lap - phai noi ro truoc khi ai do
+    trich dan con so.
+    """
+    source = metrics.get("judge_source")
+    if not source or source == "llm":
+        return ""
+
+    fallback = metrics.get("judge_fallback_count")
+    samples = metrics.get("samples")
+    if source == "heuristic":
+        return (
+            f"\n> **Luu y:** toan bo {fallback}/{samples} cau dung heuristic judge, "
+            "KHONG phai LLM (thuong do het quota hoac thieu API key). "
+            "`judge_accuracy` va `mean_judge_score` o day chi la ham bac thang cua "
+            "`token_f1` (>=0.95 -> 5, >=0.5 -> 3, con lai -> 1), khong phai danh gia "
+            "doc lap. Khong so sanh hai con so nay voi lan chay co LLM that.\n"
+        )
+    return (
+        f"\n> **Luu y:** {fallback}/{samples} cau dung heuristic judge thay vi LLM. "
+        "Diem judge trong lan chay nay tron hai nguon khac ban chat.\n"
+    )
+
+
 def _metrics_section(metrics: dict[str, Any]) -> str:
     if not metrics:
         return "## Evaluation metrics\n\n_Chua co metrics._\n"
@@ -147,6 +175,7 @@ def _metrics_section(metrics: dict[str, Any]) -> str:
     rows = [["Samples", _fmt(metrics.get("samples"))]]
     rows += [[label, _fmt(metrics.get(key))] for key, label in METRIC_KEYS]
     out = "## Evaluation metrics\n\n" + _table(["Metric", "Value"], rows)
+    out += _judge_caveat(metrics)
 
     ragas = metrics.get("ragas")
     if isinstance(ragas, dict) and ragas:
@@ -166,6 +195,22 @@ def _agent_section(agent_metrics: dict[str, Any] | None, baseline: dict[str, Any
     if "error" in agent_metrics:
         return f"## Agent evaluation\n\n_That bai: {agent_metrics['error']}_\n"
 
+    errors = agent_metrics.get("agent_errors") or 0
+    samples = agent_metrics.get("samples") or 0
+    # Hong toan bo -> bang so lieu toan 0, in ra chi gay hieu nham la "agent kem".
+    # Bao ly do thay vi bao con so.
+    if samples and errors == samples:
+        reason = agent_metrics.get("first_error") or "khong ro"
+        return (
+            "## Agent evaluation\n\n"
+            f"**Khong chay duoc.** Ca {errors}/{samples} cau deu loi, nen "
+            "`agent_metrics.json` toan gia tri 0 - day la loi ha tang, KHONG phai "
+            "ket qua do luong. Khong duoc doc bang nay nhu la agent tra loi sai.\n\n"
+            f"Loi dau tien:\n\n```\n{reason}\n```\n\n"
+            "Chay lai sau khi quota reset, hoac doi `LLM_PROVIDER` sang provider khac "
+            "trong `.env`, roi chay `script/rebuild_reports.py` de cap nhat report.\n"
+        )
+
     rows = [
         [
             label,
@@ -182,13 +227,13 @@ def _agent_section(agent_metrics: dict[str, Any] | None, baseline: dict[str, Any
         "so sanh cho Pha 2), `agent` di qua `create_agent` voi hai tool.\n\n"
         + _table(["Metric", "Deterministic", "Agent", "Δ"], rows)
     )
-    errors = agent_metrics.get("agent_errors") or 0
     if errors:
         out += (
-            f"\n> {errors}/{agent_metrics.get('samples')} cau agent khong tra loi duoc. "
+            f"\n> {errors}/{samples} cau agent khong tra loi duoc. "
             "Phan hut nay den tu loi ha tang (rate limit, timeout), khong phai tu chat "
             "luong du lieu.\n"
         )
+    out += _judge_caveat(agent_metrics)
     return out
 
 
@@ -269,6 +314,39 @@ def _phase1_verdict(
             )
 
     return "\n".join(bullets) if bullets else "_Khong du du lieu de ket luan._"
+
+
+def _judge_provenance_note(
+    baseline: dict[str, Any], corrupted: dict[str, Any], repaired: dict[str, Any]
+) -> str:
+    """Bao nguon diem judge cua ba trang thai va canh bao khi chung khong dong nhat."""
+    sources = {
+        "baseline": baseline.get("judge_source"),
+        "corrupted": corrupted.get("judge_source"),
+        "repaired": repaired.get("judge_source"),
+    }
+    known = {k: v for k, v in sources.items() if v}
+    if not known:
+        return ""
+
+    listed = ", ".join(f"{k}=`{v}`" for k, v in known.items())
+    distinct = set(known.values())
+
+    if distinct == {"llm"}:
+        return f"\nNguon diem judge: {listed}.\n"
+    if len(distinct) > 1:
+        return (
+            f"\n> **Canh bao:** nguon diem judge khong dong nhat ({listed}). "
+            "`judge_accuracy` va `mean_judge_score` giua cac trang thai KHONG so sanh "
+            "duoc - mot phan chenh lech den tu cach cham diem chu khong tu du lieu. "
+            "Chi doc `retrieval_hit_rate` va `mean_token_f1` trong bang tren.\n"
+        )
+    return (
+        f"\n> **Luu y:** ca ba trang thai deu dung heuristic judge ({listed}), khong "
+        "phai LLM. Vi dung chung mot cach cham nen so sanh van nhat quan, nhung "
+        "`judge_accuracy` chi la ham bac thang cua `token_f1` chu khong phai danh gia "
+        "doc lap.\n"
+    )
 
 
 def generate_corruption_report(
@@ -360,6 +438,7 @@ def generate_corruption_report(
             ["Metric", "Baseline", "Corrupted", "Δ vs baseline", "Repaired", "Δ vs baseline"],
             metric_rows,
         ),
+        _judge_provenance_note(baseline, corrupted, repaired),
         "",
         "## Data quality",
         "",

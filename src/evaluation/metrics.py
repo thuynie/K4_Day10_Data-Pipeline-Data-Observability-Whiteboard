@@ -71,6 +71,36 @@ Return:
         )
 
 
+FALLBACK_JUDGE_MARKER = "Fallback heuristic judge"
+
+
+def judge_provenance(answers: list[dict[str, Any]]) -> dict[str, Any]:
+    """Xac dinh diem judge den tu LLM hay tu heuristic fallback.
+
+    `_judge_answer` khong nem loi khi khong goi duoc LLM - no lang le doi sang
+    cong thuc bac thang tren token_f1. Neu khong ghi lai dau vet nay thi
+    `judge_accuracy` cua hai lan chay khac nhau ve ban chat trong lai giong het
+    nhau.
+    """
+    total = len(answers)
+    fallback = sum(
+        1 for item in answers if FALLBACK_JUDGE_MARKER in item["judge"]["reasoning"]
+    )
+    if total == 0:
+        source = "unknown"
+    elif fallback == 0:
+        source = "llm"
+    elif fallback == total:
+        source = "heuristic"
+    else:
+        source = "mixed"
+    return {
+        "judge_source": source,
+        "judge_fallback_count": fallback,
+        "judge_llm_count": total - fallback,
+    }
+
+
 def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, Any]:
     if os.getenv("RUN_RAGAS", "").lower() not in {"1", "true", "yes"}:
         return {"skipped": "Set RUN_RAGAS=1 to enable the slower Ragas pass."}
@@ -137,6 +167,10 @@ def evaluate_pipeline(
         "mean_token_f1": mean(item["token_f1"] for item in answers),
         "judge_accuracy": mean(1.0 if item["judge"]["correct"] else 0.0 for item in answers),
         "mean_judge_score": mean(item["judge"]["score"] for item in answers),
+        # Ghi thang vao artifact: judge_accuracy tinh bang LLM hay bang heuristic
+        # token-overlap. Hai thu nay khong so sanh duoc voi nhau, ma nhin vao
+        # rieng con so thi khong phan biet duoc.
+        **judge_provenance(answers),
     }
     summary["ragas"] = _run_ragas(settings, answers)
 
@@ -222,14 +256,20 @@ def evaluate_agent_pipeline(
     if not answers:
         raise RuntimeError(f"Test set rong: {test_set_path}")
 
+    first_error = next((item["error"] for item in answers if item["error"]), "")
+
     summary = {
         "mode": "agent",
         "samples": len(answers),
         "agent_errors": errors,
+        # Giu lai loi dau tien de report noi duoc VI SAO agent hong, thay vi chi
+        # hien mot bang toan so 0.
+        "first_error": first_error[:300],
         "retrieval_hit_rate": mean(1.0 if item["retrieval_hit"] else 0.0 for item in answers),
         "mean_token_f1": mean(item["token_f1"] for item in answers),
         "judge_accuracy": mean(1.0 if item["judge"]["correct"] else 0.0 for item in answers),
         "mean_judge_score": mean(item["judge"]["score"] for item in answers),
+        **judge_provenance(answers),
     }
 
     write_json(metrics_output_path, summary)
