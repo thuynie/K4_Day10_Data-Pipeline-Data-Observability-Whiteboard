@@ -1,6 +1,6 @@
 # Corruption impact report
 
-_Generated at: 2026-08-06T14:19:48.793892+00:00_
+_Generated at: 2026-08-06T15:15:54.458803+00:00_
 
 Ba trang thai dung chung test set, ground truth, evaluator va top-k.
 Khac biet metric vi vay den tu chat luong du lieu, khong phai tu cau hinh.
@@ -13,6 +13,9 @@ Khac biet metric vi vay den tu chat luong du lieu, khong phai tu cau hinh.
 | Mean token F1 | 0.9314 | 0.7135 | -0.2180 | 0.9314 | 0.0000 |
 | Judge accuracy | 1.0000 | 0.7500 | -0.2500 | 1.0000 | 0.0000 |
 | Mean judge score | 4.5000 | 3.6875 | -0.8125 | 4.5000 | 0.0000 |
+
+
+> **Luu y:** ca ba trang thai deu dung heuristic judge (baseline=`heuristic`, corrupted=`heuristic`, repaired=`heuristic`), khong phai LLM. Vi dung chung mot cach cham nen so sanh van nhat quan, nhung `judge_accuracy` chi la ham bac thang cua `token_f1` chu khong phai danh gia doc lap.
 
 
 ## Data quality

@@ -1,6 +1,6 @@
 # Phase 1 - Baseline pipeline report
 
-_Generated at: 2026-08-06T14:07:17.585073+00:00_
+_Generated at: 2026-08-06T15:15:54.457998+00:00_
 
 ## Source
 
@@ -9,21 +9,11 @@ _Generated at: 2026-08-06T14:07:17.585073+00:00_
 | `source_api` | Crossref REST API |
 | `source_query` | agentic retrieval augmented generation large language model |
 | `source_filter` | from-pub-date:2026-02-07,has-abstract:true |
-| `max_results` | 24 |
-| `raw_records` | 24 |
-| `clean_rows` | 24 |
-| `dropped_rows` | 0 |
-| `embedding_model` | gemini-embedding-001 |
-| `embedding_dimensions` | 1536 |
-| `collection_name` | papers-baseline |
 | `llm_provider` | gemini |
 | `llm_model` | gemini-2.5-flash |
+| `embedding_model` | gemini-embedding-001 |
 | `top_k` | 4 |
-| `judge_fallback_count` | 32/32 |
-| `clean_csv` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/clean/papers_clean.csv |
-| `clean_json` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/clean/papers_clean.json |
-| `embeddings_manifest` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/embeddings/papers_embeddings.json |
-| `eval_testset` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/eval/test_set.json |
+| `note` | Report dung lai tu artifact co san (rebuild_reports.py), khong chay lai pipeline. |
 | `baseline_metrics` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/results/baseline_metrics.json |
 | `agent_metrics` | /home/trungdq/AITHUCCHIEN/Labs_đang_làm/K4_Day10_Data-Pipeline-Data-Observability-Whiteboard/data/results/agent_metrics.json |
 
@@ -38,6 +28,8 @@ _Generated at: 2026-08-06T14:07:17.585073+00:00_
 | Judge accuracy | 1.0000 |
 | Mean judge score | 4.5000 |
 
+> **Luu y:** toan bo 32/32 cau dung heuristic judge, KHONG phai LLM (thuong do het quota hoac thieu API key). `judge_accuracy` va `mean_judge_score` o day chi la ham bac thang cua `token_f1` (>=0.95 -> 5, >=0.5 -> 3, con lai -> 1), khong phai danh gia doc lap. Khong so sanh hai con so nay voi lan chay co LLM that.
+
 ### Ragas
 
 | Metric | Value |
@@ -47,17 +39,15 @@ _Generated at: 2026-08-06T14:07:17.585073+00:00_
 
 ## Agent evaluation
 
-Cung test set, cung ground truth, khac cach sinh cau tra loi:
-`deterministic` di qua `qa.answer_question` (khong goi LLM, dung lam moc so sanh cho Pha 2), `agent` di qua `create_agent` voi hai tool.
+**Khong chay duoc.** Ca 32/32 cau deu loi, nen `agent_metrics.json` toan gia tri 0 - day la loi ha tang, KHONG phai ket qua do luong. Khong duoc doc bang nay nhu la agent tra loi sai.
 
-| Metric | Deterministic | Agent | Δ |
-| --- | --- | --- | --- |
-| Retrieval hit rate | 1.0000 | 0.0000 | -1.0000 |
-| Mean token F1 | 0.9314 | 0.0000 | -0.9314 |
-| Judge accuracy | 1.0000 | 0.0000 | -1.0000 |
-| Mean judge score | 4.5000 | 1 | -3.5000 |
+Loi dau tien:
 
-> 32/32 cau agent khong tra loi duoc. Phan hut nay den tu loi ha tang (rate limit, timeout), khong phai tu chat luong du lieu.
+```
+khong ro
+```
+
+Chay lai sau khi quota reset, hoac doi `LLM_PROVIDER` sang provider khac trong `.env`, roi chay `script/rebuild_reports.py` de cap nhat report.
 
 
 ## Data quality

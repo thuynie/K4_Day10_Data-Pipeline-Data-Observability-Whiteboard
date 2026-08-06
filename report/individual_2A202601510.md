@@ -4,7 +4,7 @@
 
 | Thông tin | Nội dung |
 | --- | --- |
-| Họ và tên | Đăngj Quang Trung |
+| Họ và tên | Đặng Quang Trung |
 | MSSV | 2A202601510 |
 | Khóa/Lớp | K4 |
 | Tên nhóm | Whiteboard |
@@ -252,5 +252,5 @@ Một điểm bất ngờ thứ hai: `retrieval_hit_rate` baseline đạt trần
 - [x] Báo cáo không chứa `.env`, API key, token hoặc secret.
 - [x] Báo cáo này không phải bản sao nguyên văn của báo cáo nhóm hoặc báo cáo thành viên khác.
 
-**Họ và tên:** [Điền họ tên]
+**Họ và tên:** Đặng Quang Trung
 **Ngày xác nhận:** 2026-08-06
