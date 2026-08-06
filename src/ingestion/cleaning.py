@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 import html
+import json
+from pathlib import Path
 import re
 
 import pandas as pd
@@ -12,20 +14,44 @@ from ingestion.crossref import PaperRecord
 def _clean_str(text: str | None) -> str:
     if not text:
         return ""
+    # Strip HTML/XML tags (e.g. <jats:p>, <b>, <i>, <p>, etc.)
     cleaned = re.sub(r"<[^>]+>", "", str(text))
     cleaned = html.unescape(cleaned)
     cleaned = " ".join(cleaned.split())
     return cleaned
 
 
-def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.DataFrame:
+def save_clean_dataframe(df: pd.DataFrame, csv_path: Path, json_path: Path) -> None:
+    """Save cleaned DataFrame to CSV and JSON files."""
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    json_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Save to CSV
+    df.to_csv(csv_path, index=False, encoding="utf-8")
+
+    # Save to JSON
+    df.to_json(json_path, orient="records", indent=2, force_ascii=False)
+
+
+def build_clean_dataframe(
+    records: list[PaperRecord],
+    run_date: datetime,
+    clean_csv_path: Path | None = None,
+    clean_json_path: Path | None = None,
+) -> pd.DataFrame:
     """Clean raw records into a structured DataFrame ready for embedding.
 
-    Performs normalization, date parsing, age calculation, text formatting,
-    deduplication, and quality filtering.
+    Rules applied:
+    1. Drop records missing title or with summary under 100 characters.
+    2. Strip XML/HTML tags from title and summary.
+    3. Join authors into authors_joined and categories into categories_joined with commas.
+    4. Format published date to YYYY-MM-DD and compute age_days.
+    5. Build text_for_embedding as: Title: [title] | Authors: [authors] | Summary: [summary].
+    6. Deduplicate by paper_id, sort by published date descending.
+    7. Optionally save to clean_csv_path and clean_json_path if provided.
     """
     if not records:
-        return pd.DataFrame(
+        empty_df = pd.DataFrame(
             columns=[
                 "paper_id",
                 "title",
@@ -45,6 +71,9 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
                 "text_for_embedding",
             ]
         )
+        if clean_csv_path and clean_json_path:
+            save_clean_dataframe(empty_df, clean_csv_path, clean_json_path)
+        return empty_df
 
     rows = []
     run_dt_naive = run_date.replace(tzinfo=None) if run_date else datetime.now(timezone.utc).replace(tzinfo=None)
@@ -85,12 +114,8 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
 
         summary_chars = len(summary)
 
-        text_for_embedding = (
-            f"Title: {title}\n"
-            f"Authors: {authors_joined}\n"
-            f"Categories: {categories_joined}\n"
-            f"Summary: {summary}"
-        )
+        # Format: Title: [title] | Authors: [authors] | Summary: [summary]
+        text_for_embedding = f"Title: {title} | Authors: {authors_joined} | Summary: {summary}"
 
         row = {
             "paper_id": paper_id,
@@ -115,16 +140,22 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
     df = pd.DataFrame(rows)
 
     if df.empty:
+        if clean_csv_path and clean_json_path:
+            save_clean_dataframe(df, clean_csv_path, clean_json_path)
         return df
 
     # Drop duplicates by paper_id
     df = df.drop_duplicates(subset=["paper_id"], keep="first")
 
-    # Filter out invalid rows (missing title or missing/too short summary)
-    df = df[(df["title"].str.len() > 0) & (df["summary_chars"] >= 10)]
+    # Filter out trash records: missing title OR summary under 100 characters
+    df = df[(df["title"].str.len() > 0) & (df["summary_chars"] >= 100)]
 
     # Sort dataframe by published date descending, then paper_id
     df = df.sort_values(by=["published", "paper_id"], ascending=[False, True]).reset_index(drop=True)
 
+    if clean_csv_path and clean_json_path:
+        save_clean_dataframe(df, clean_csv_path, clean_json_path)
+
     return df
+
 
