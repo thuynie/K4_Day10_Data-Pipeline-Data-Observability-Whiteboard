@@ -6,3 +6,9 @@ src/*.egg-info/
 lab/
 **/__pycache__/
 .idea/
+
+# Vector store va cache - sinh lai duoc bang cach chay lai pipeline.
+# De bai ghi ro: KHONG commit file database lon.
+data/chroma/
+!data/chroma/.gitkeep
+data/embeddings/_embedding_cache.json
